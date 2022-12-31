@@ -5,16 +5,20 @@
   "version": "0.0.0",
   "publisher": "",
   "repository": "",
+  "private": true,
   "engines": {
     "vscode": "^1.74.0"
   },
-  "categories": [
-    "Other"
-  ],
+  "categories": [],
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": []
+    "commands": [
+      {
+				"command": "nginx-unit.open-config",
+				"title": "Open Nginx Unit config"
+			}
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
