@@ -24,20 +24,18 @@ export class UnitFS implements FileSystemProvider {
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
-    const content = await this.connectToUnit(uri);
+    const content = await this.requestToUnit(['-X', 'GET']);
 
     return new TextEncoder().encode(content);
   }
 
-  writeFile(
-    uri: Uri,
-    content: Uint8Array,
-    options: { readonly create: boolean; readonly overwrite: boolean }
-  ): void | Thenable<void> {
-    throw new Error('Method writeFile not implemented.');
+  async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
+    const str = new TextDecoder().decode(content);
+
+    await this.requestToUnit(['-X', 'PUT', '-d', str]);
   }
 
-  async connectToUnit(uri: Uri): Promise<string> {
+  async requestToUnit(curlArgs: string[] = []): Promise<string> {
     const spawnOptions = {
       encoding: 'utf8',
       timeout: 1000 * 60 * 1, // 1 minute
@@ -47,10 +45,10 @@ export class UnitFS implements FileSystemProvider {
       '--unix-socket',
       '/var/run/control.unit.sock',
       'http://localhost/config/',
+      ...curlArgs,
     ];
 
     return new Promise((resolve, reject) => {
-      // TODO: add abort signal
       const curl = spawn('curl', args, spawnOptions);
 
       curl.stdout.on('data', (data) => {
