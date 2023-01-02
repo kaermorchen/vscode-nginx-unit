@@ -13,6 +13,12 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "jsonValidation": [
+      {
+        "fileMatch": "**config",
+        "url": "./schemas/config.json"
+      }
+    ],
     "commands": [
       {
         "command": "nginx-unit.open-config",
