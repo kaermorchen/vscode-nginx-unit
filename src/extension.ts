@@ -6,14 +6,15 @@ import {
   commands,
   window,
 } from 'vscode';
-import { UnitFS } from './providers/unit-file-system';
+import UnitFS from './providers/unit-file-system';
 import { URI } from 'vscode-uri';
+import nameToURI from './utils/name-to-uri';
 
 export function activate(context: ExtensionContext) {
   const unitFS = new UnitFS();
 
   const providerRegistrations = Disposable.from(
-    workspace.registerFileSystemProvider('unitfs', unitFS)
+    workspace.registerFileSystemProvider(UnitFS.scheme, unitFS)
   );
 
   const commandRegistration = commands.registerCommand(
@@ -33,15 +34,15 @@ export function activate(context: ExtensionContext) {
           }
         );
 
-        if (!value) {
+        connection = connections.find((item) => item.name === value);
+
+        if (!connection) {
           return;
         }
-
-        connection = connections.find((item) => item.name === value);
       }
 
       const doc = await workspace.openTextDocument(
-        URI.parse(`unitfs:/${connection?.name}`)
+        nameToURI(connection.name, 'config')
       );
       languages.setTextDocumentLanguage(doc, 'json');
       window.showTextDocument(doc, { preview: false });

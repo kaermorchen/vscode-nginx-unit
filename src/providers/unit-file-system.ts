@@ -10,8 +10,10 @@ import {
   Uri,
   workspace,
 } from 'vscode';
+import nameToURI from '../utils/name-to-uri';
 
-export class UnitFS implements FileSystemProvider {
+export default class UnitFS implements FileSystemProvider {
+  static scheme = 'unitfs';
   #emitter = new EventEmitter<FileChangeEvent[]>();
   onDidChangeFile: Event<FileChangeEvent[]> = this.#emitter.event;
 
@@ -27,7 +29,9 @@ export class UnitFS implements FileSystemProvider {
   getConnection(uri: Uri) {
     const config = workspace.getConfiguration('nginx-unit');
     const connections = config.get('connections') as ConfigConnection[];
-    const connection = connections.find((item) => `/${item.name}` === uri.path);
+    const connection = connections.find(
+      (item) => nameToURI(item.name, 'config').toString() === uri.toString()
+    );
 
     if (!connection) {
       throw new Error("Connection's settings not found");
@@ -54,7 +58,7 @@ export class UnitFS implements FileSystemProvider {
     await this.requestToUnit([...connection.params, '-X', 'PUT', '-d', str]);
   }
 
-  async requestToUnit(curlArgs: string[] = []): Promise<string> {
+  async requestToUnit(curlArgs: string[]): Promise<string> {
     const spawnOptions = {
       encoding: 'utf8',
       timeout: 1000 * 60 * 1, // 1 minute
