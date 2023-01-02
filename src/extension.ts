@@ -19,10 +19,32 @@ export function activate(context: ExtensionContext) {
   const commandRegistration = commands.registerCommand(
     'nginx-unit.open-config',
     async () => {
-      const doc = await workspace.openTextDocument(URI.parse('unitfs:/config'));
+      const config = workspace.getConfiguration('nginx-unit');
+      const connections = config.get('connections') as ConfigConnection[];
+      let connection;
 
+      if (connections.length === 1) {
+        connection = connections[0];
+      } else {
+        const value = await window.showQuickPick(
+          connections.map((item) => item.name),
+          {
+            placeHolder: 'Select the connection to Nginx Unit',
+          }
+        );
+
+        if (!value) {
+          return;
+        }
+
+        connection = connections.find((item) => item.name === value);
+      }
+
+      const doc = await workspace.openTextDocument(
+        URI.parse(`unitfs:/${connection?.name}`)
+      );
       languages.setTextDocumentLanguage(doc, 'json');
-      window.showTextDocument(doc);
+      window.showTextDocument(doc, { preview: false });
     }
   );
 

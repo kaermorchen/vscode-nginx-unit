@@ -18,6 +18,26 @@
         "command": "nginx-unit.open-config",
         "title": "Open Nginx Unit config"
       }
+    ],
+    "configuration": [
+      {
+        "title": "Nginx Unit",
+        "properties": {
+          "nginx-unit.connections": {
+            "type": "array",
+            "description": "Connections list",
+            "default": [
+              {
+                "name": "default",
+                "params": [
+                  "--unix-socket",
+                  "/var/run/control.unit.sock"
+                ]
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   "scripts": {

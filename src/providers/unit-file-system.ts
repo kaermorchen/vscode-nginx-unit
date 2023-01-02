@@ -8,6 +8,7 @@ import {
   FileSystemProvider,
   FileType,
   Uri,
+  workspace,
 } from 'vscode';
 
 export class UnitFS implements FileSystemProvider {
@@ -23,16 +24,34 @@ export class UnitFS implements FileSystemProvider {
     };
   }
 
+  getConnection(uri: Uri) {
+    const config = workspace.getConfiguration('nginx-unit');
+    const connections = config.get('connections') as ConfigConnection[];
+    const connection = connections.find((item) => `/${item.name}` === uri.path);
+
+    if (!connection) {
+      throw new Error("Connection's settings not found");
+    }
+
+    return connection;
+  }
+
   async readFile(uri: Uri): Promise<Uint8Array> {
-    const content = await this.requestToUnit(['-X', 'GET']);
+    const connection = this.getConnection(uri);
+    const content = await this.requestToUnit([
+      ...connection.params,
+      '-X',
+      'GET',
+    ]);
 
     return new TextEncoder().encode(content);
   }
 
   async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
+    const connection = this.getConnection(uri);
     const str = new TextDecoder().decode(content);
 
-    await this.requestToUnit(['-X', 'PUT', '-d', str]);
+    await this.requestToUnit([...connection.params, '-X', 'PUT', '-d', str]);
   }
 
   async requestToUnit(curlArgs: string[] = []): Promise<string> {
@@ -40,13 +59,7 @@ export class UnitFS implements FileSystemProvider {
       encoding: 'utf8',
       timeout: 1000 * 60 * 1, // 1 minute
     };
-    const args = [
-      '--silent',
-      '--unix-socket',
-      '/var/run/control.unit.sock',
-      'http://localhost/config/',
-      ...curlArgs,
-    ];
+    const args = ['--silent', 'http://localhost/config/', ...curlArgs];
 
     return new Promise((resolve, reject) => {
       const curl = spawn('curl', args, spawnOptions);
