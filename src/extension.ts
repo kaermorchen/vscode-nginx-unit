@@ -4,31 +4,30 @@ import {
   workspace,
   languages,
   commands,
-  Uri,
   window,
 } from 'vscode';
-import UnitProvider from './providers/unit';
+import { UnitFS } from './providers/unit-file-system';
+import { URI } from 'vscode-uri';
 
 export function activate(context: ExtensionContext) {
-  const provider = new UnitProvider();
+  const unitFS = new UnitFS();
 
   const providerRegistrations = Disposable.from(
-    workspace.registerTextDocumentContentProvider(UnitProvider.scheme, provider)
-    // languages.registerDocumentLinkProvider({ scheme: UnitProvider.scheme }, provider)
+    workspace.registerFileSystemProvider('unitfs', unitFS)
   );
 
   const commandRegistration = commands.registerCommand(
     'nginx-unit.open-config',
     async () => {
-      const uri = Uri.parse(`${UnitProvider.scheme}:config`);
-      const doc = await workspace.openTextDocument(uri);
+      const doc = await workspace.openTextDocument(URI.parse('unitfs:/config'));
 
-      await window.showTextDocument(doc, { preview: false });
+      languages.setTextDocumentLanguage(doc, 'json');
+      window.showTextDocument(doc);
     }
   );
 
   context.subscriptions.push(
-    provider,
+    // unitFS,
     providerRegistrations,
     commandRegistration
   );
