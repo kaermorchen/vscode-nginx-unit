@@ -7,7 +7,6 @@ import {
   window,
 } from 'vscode';
 import UnitFS from './providers/unit-file-system';
-import { URI } from 'vscode-uri';
 import nameToURI from './utils/name-to-uri';
 
 export function activate(context: ExtensionContext) {

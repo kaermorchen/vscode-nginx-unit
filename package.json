@@ -13,6 +13,15 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "resourceLabelFormatters": [
+      {
+        "scheme": "nginx-unit",
+        "formatting": {
+          "label": "Nginx Unit ${path}",
+          "separator": "/"
+        }
+      }
+    ],
     "jsonValidation": [
       {
         "fileMatch": "**config",

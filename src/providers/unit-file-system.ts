@@ -13,7 +13,8 @@ import {
 import nameToURI from '../utils/name-to-uri';
 
 export default class UnitFS implements FileSystemProvider {
-  static scheme = 'unitfs';
+  static scheme = 'nginx-unit';
+
   #emitter = new EventEmitter<FileChangeEvent[]>();
   onDidChangeFile: Event<FileChangeEvent[]> = this.#emitter.event;
 
