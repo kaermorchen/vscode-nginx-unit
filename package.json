@@ -1,10 +1,11 @@
 {
   "name": "vscode-nginx-unit",
-  "displayName": "Nginx Unit",
-  "description": "Nginx Unit for VS Code",
+  "displayName": "NGINX Unit",
+  "description": "Support for NGINX Unit",
   "version": "0.0.0",
-  "publisher": "",
-  "repository": "",
+  "publisher": "Stanislav Romanov <kaermorchen@gmail.com>",
+  "repository": "https://github.com/kaermorchen/vscode-nginx-unit",
+  "author": "Stanislav Romanov <kaermorchen@gmail.com>",
   "private": true,
   "engines": {
     "vscode": "^1.74.0"
@@ -13,11 +14,45 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "resourceLabelFormatters": [
+      {
+        "scheme": "nginx-unit",
+        "formatting": {
+          "label": "Nginx Unit ${path}",
+          "separator": "/"
+        }
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "**config",
+        "url": "./schemas/config.json"
+      }
+    ],
     "commands": [
       {
-				"command": "nginx-unit.open-config",
-				"title": "Open Nginx Unit config"
-			}
+        "command": "nginx-unit.open-config",
+        "title": "Open Nginx Unit config"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Nginx Unit",
+        "properties": {
+          "nginx-unit.connections": {
+            "type": "array",
+            "default": [
+              {
+                "name": "default",
+                "params": [
+                  "--unix-socket",
+                  "/var/run/control.unit.sock"
+                ]
+              }
+            ]
+          }
+        }
+      }
     ]
   },
   "scripts": {
@@ -33,5 +68,8 @@
     "@typescript-eslint/parser": "^5.47.1",
     "eslint": "^8.30.0",
     "typescript": "^4.9.4"
+  },
+  "dependencies": {
+    "vscode-uri": "^3.0.7"
   }
 }

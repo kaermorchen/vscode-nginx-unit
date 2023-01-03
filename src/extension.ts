@@ -4,31 +4,52 @@ import {
   workspace,
   languages,
   commands,
-  Uri,
   window,
 } from 'vscode';
-import UnitProvider from './providers/unit';
+import UnitFS from './providers/unit-file-system';
+import nameToURI from './utils/name-to-uri';
 
 export function activate(context: ExtensionContext) {
-  const provider = new UnitProvider();
+  const unitFS = new UnitFS();
 
   const providerRegistrations = Disposable.from(
-    workspace.registerTextDocumentContentProvider(UnitProvider.scheme, provider)
-    // languages.registerDocumentLinkProvider({ scheme: UnitProvider.scheme }, provider)
+    workspace.registerFileSystemProvider(UnitFS.scheme, unitFS)
   );
 
   const commandRegistration = commands.registerCommand(
     'nginx-unit.open-config',
     async () => {
-      const uri = Uri.parse(`${UnitProvider.scheme}:config`);
-      const doc = await workspace.openTextDocument(uri);
+      const config = workspace.getConfiguration('nginx-unit');
+      const connections = config.get('connections') as ConfigConnection[];
+      let connection;
 
-      await window.showTextDocument(doc, { preview: false });
+      if (connections.length === 1) {
+        connection = connections[0];
+      } else {
+        const value = await window.showQuickPick(
+          connections.map((item) => item.name),
+          {
+            placeHolder: 'Select the connection to Nginx Unit',
+          }
+        );
+
+        connection = connections.find((item) => item.name === value);
+
+        if (!connection) {
+          return;
+        }
+      }
+
+      const doc = await workspace.openTextDocument(
+        nameToURI(connection.name, 'config')
+      );
+      languages.setTextDocumentLanguage(doc, 'json');
+      window.showTextDocument(doc, { preview: false });
     }
   );
 
   context.subscriptions.push(
-    provider,
+    // unitFS,
     providerRegistrations,
     commandRegistration
   );
