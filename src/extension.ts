@@ -16,6 +16,12 @@ export function activate(context: ExtensionContext) {
     workspace.registerFileSystemProvider(UnitFS.scheme, unitFS)
   );
 
+  workspace.onDidOpenTextDocument((doc) => {
+    if (doc.uri.scheme === UnitFS.scheme) {
+      languages.setTextDocumentLanguage(doc, 'json');
+    }
+  });
+
   const commandRegistration = commands.registerCommand(
     'nginx-unit.open-config',
     async () => {
@@ -43,6 +49,7 @@ export function activate(context: ExtensionContext) {
       const doc = await workspace.openTextDocument(
         nameToURI(connection.name, 'config')
       );
+
 
       window.showTextDocument(doc, { preview: false });
     }
