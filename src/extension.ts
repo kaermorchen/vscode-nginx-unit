@@ -43,7 +43,7 @@ export function activate(context: ExtensionContext) {
       const doc = await workspace.openTextDocument(
         nameToURI(connection.name, 'config')
       );
-      languages.setTextDocumentLanguage(doc, 'json');
+
       window.showTextDocument(doc, { preview: false });
     }
   );

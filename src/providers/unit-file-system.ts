@@ -9,7 +9,10 @@ import {
   FileType,
   Uri,
   workspace,
+  window,
+  languages,
 } from 'vscode';
+import getSection from '../utils/get-section';
 import nameToURI from '../utils/name-to-uri';
 
 export default class UnitFS implements FileSystemProvider {
@@ -27,7 +30,7 @@ export default class UnitFS implements FileSystemProvider {
     };
   }
 
-  getConnection(uri: Uri) {
+  getConnection(uri: Uri): ConfigConnection {
     const config = workspace.getConfiguration('nginx-unit');
     const connections = config.get('connections') as ConfigConnection[];
     const connection = connections.find(
@@ -35,38 +38,43 @@ export default class UnitFS implements FileSystemProvider {
     );
 
     if (!connection) {
-      throw new Error("Connection's settings not found");
+      const msg = "Connection's settings not found";
+
+      window.showErrorMessage(msg);
+
+      throw new Error(msg);
     }
 
     return connection;
   }
 
   async readFile(uri: Uri): Promise<Uint8Array> {
-    const connection = this.getConnection(uri);
-    const content = await this.requestToUnit([
-      ...connection.params,
-      '-X',
-      'GET',
-    ]);
+    const content = await this.requestToUnit(uri, ['-X', 'GET']);
 
     return new TextEncoder().encode(content);
   }
 
   async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
-    const connection = this.getConnection(uri);
     const str = new TextDecoder().decode(content);
 
-    await this.requestToUnit([...connection.params, '-X', 'PUT', '-d', str]);
+    await this.requestToUnit(uri, ['-X', 'PUT', '-d', str]);
   }
 
-  async requestToUnit(curlArgs: string[]): Promise<string> {
+  async requestToUnit(uri: Uri, curlArgs: string[]): Promise<string> {
+    const connection = this.getConnection(uri);
+    const section = getSection(uri);
     const spawnOptions = {
       encoding: 'utf8',
       timeout: 1000 * 60 * 1, // 1 minute
     };
-    const args = ['--silent', 'http://localhost/config/', ...curlArgs];
+    const args = [
+      `http://localhost/${section}/`,
+      '--silent',
+      ...connection.params,
+      ...curlArgs,
+    ];
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const curl = spawn('curl', args, spawnOptions);
 
       curl.stdout.on('data', (data) => {
@@ -74,12 +82,12 @@ export default class UnitFS implements FileSystemProvider {
       });
 
       curl.stderr.on('data', (x) => {
-        reject(x.toString());
+        throw new Error(`curl error - ${x}`);
       });
 
       curl.on('exit', (code) => {
         if (code !== 0) {
-          reject(code);
+          throw new Error(`curl process has exited with code ${code}`);
         }
       });
     });
