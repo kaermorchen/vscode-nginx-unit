@@ -34,7 +34,7 @@
     "commands": [
       {
         "command": "nginx-unit.open-config",
-        "title": "Open Nginx Unit config"
+        "title": "Open Nginx Unit"
       }
     ],
     "configuration": [

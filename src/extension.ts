@@ -9,6 +9,8 @@ import {
 import UnitFS from './providers/unit-file-system';
 import nameToURI from './utils/name-to-uri';
 
+const unitSections = ['config', 'certificates', 'status'];
+
 export function activate(context: ExtensionContext) {
   const unitFS = new UnitFS();
 
@@ -36,7 +38,7 @@ export function activate(context: ExtensionContext) {
         const value = await window.showQuickPick(
           connections.map((item) => item.name),
           {
-            placeHolder: 'Select the connection to Nginx Unit',
+            placeHolder: 'Select the connection',
           }
         );
 
@@ -47,8 +49,16 @@ export function activate(context: ExtensionContext) {
         }
       }
 
+      const section = await window.showQuickPick(unitSections, {
+        placeHolder: 'Select the section of Nginx Unit',
+      });
+
+      if (!section) {
+        return;
+      }
+
       const doc = await workspace.openTextDocument(
-        nameToURI(connection.name, 'config')
+        nameToURI(connection.name, section)
       );
 
       window.showTextDocument(doc, { preview: false });

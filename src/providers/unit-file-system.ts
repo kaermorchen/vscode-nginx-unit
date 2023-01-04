@@ -8,11 +8,10 @@ import {
   FileSystemProvider,
   FileType,
   Uri,
-  workspace,
   window,
 } from 'vscode';
+import getConnection from '../utils/get-connection';
 import getSection from '../utils/get-section';
-import nameToURI from '../utils/name-to-uri';
 
 export default class UnitFS implements FileSystemProvider {
   static scheme = 'nginx-unit';
@@ -29,22 +28,6 @@ export default class UnitFS implements FileSystemProvider {
     };
   }
 
-  getConnection(uri: Uri): ConfigConnection {
-    const config = workspace.getConfiguration('nginx-unit');
-    const connections = config.get('connections') as ConfigConnection[];
-    const connection = connections.find(
-      (item) => nameToURI(item.name, 'config').toString() === uri.toString()
-    );
-
-    if (!connection) {
-      const msg = "Connection's settings not found";
-      window.showErrorMessage(msg);
-      throw new Error(msg);
-    }
-
-    return connection;
-  }
-
   async readFile(uri: Uri): Promise<Uint8Array> {
     const content = await this.requestToUnit(uri, ['-X', 'GET']);
 
@@ -54,11 +37,15 @@ export default class UnitFS implements FileSystemProvider {
   async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
     const str = new TextDecoder().decode(content);
 
-    await this.requestToUnit(uri, ['-X', 'PUT', '-d', str]);
+    try {
+      await this.requestToUnit(uri, ['-X', 'PUT', '-d', str]);
+    } catch {
+      // TODO: add diagnostic
+    }
   }
 
   async requestToUnit(uri: Uri, curlArgs: string[]): Promise<string> {
-    const connection = this.getConnection(uri);
+    const connection = getConnection(uri);
     const section = getSection(uri);
     const spawnOptions = {
       encoding: 'utf8',
@@ -67,24 +54,33 @@ export default class UnitFS implements FileSystemProvider {
     const args = [
       `http://localhost/${section}/`,
       '--silent',
+      '--no-buffer',
       ...connection.params,
       ...curlArgs,
     ];
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const curl = spawn('curl', args, spawnOptions);
 
       curl.stdout.on('data', (data) => {
-        resolve(data);
+        const result = JSON.parse(data.toString());
+
+        if (result.error) {
+          const msg = `${result.error} ${result.detail}`;
+          window.showErrorMessage(msg);
+          reject(new Error(msg));
+        } else {
+          resolve(data);
+        }
       });
 
       curl.stderr.on('data', (x) => {
-        throw new Error(`curl error - ${x}`);
+        reject(new Error(`curl error - ${x}`));
       });
 
       curl.on('exit', (code) => {
         if (code !== 0) {
-          throw new Error(`curl process has exited with code ${code}`);
+          reject(new Error(`The curl process has exited with a code ${code}`));
         }
       });
     });
