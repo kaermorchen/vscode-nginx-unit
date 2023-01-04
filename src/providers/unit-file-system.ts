@@ -10,7 +10,6 @@ import {
   Uri,
   workspace,
   window,
-  languages,
 } from 'vscode';
 import getSection from '../utils/get-section';
 import nameToURI from '../utils/name-to-uri';
@@ -39,9 +38,7 @@ export default class UnitFS implements FileSystemProvider {
 
     if (!connection) {
       const msg = "Connection's settings not found";
-
       window.showErrorMessage(msg);
-
       throw new Error(msg);
     }
 

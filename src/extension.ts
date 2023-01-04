@@ -16,15 +16,16 @@ export function activate(context: ExtensionContext) {
     workspace.registerFileSystemProvider(UnitFS.scheme, unitFS)
   );
 
-  workspace.onDidOpenTextDocument((doc) => {
-    if (doc.uri.scheme === UnitFS.scheme) {
-      languages.setTextDocumentLanguage(doc, 'json');
-    }
-  });
+  const eventRegistrations = Disposable.from(
+    workspace.onDidOpenTextDocument((doc) => {
+      if (doc.uri.scheme === UnitFS.scheme) {
+        languages.setTextDocumentLanguage(doc, 'json');
+      }
+    })
+  );
 
-  const commandRegistration = commands.registerCommand(
-    'nginx-unit.open-config',
-    async () => {
+  const commandRegistrations = Disposable.from(
+    commands.registerCommand('nginx-unit.open-config', async () => {
       const config = workspace.getConfiguration('nginx-unit');
       const connections = config.get('connections') as ConfigConnection[];
       let connection;
@@ -50,14 +51,14 @@ export function activate(context: ExtensionContext) {
         nameToURI(connection.name, 'config')
       );
 
-
       window.showTextDocument(doc, { preview: false });
-    }
+    })
   );
 
   context.subscriptions.push(
     // unitFS,
     providerRegistrations,
-    commandRegistration
+    eventRegistrations,
+    commandRegistrations
   );
 }
