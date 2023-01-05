@@ -3,7 +3,7 @@
   "displayName": "NGINX Unit",
   "description": "Support for NGINX Unit",
   "version": "0.0.0",
-  "publisher": "kaermorchen",
+  "publisher": "stanislav",
   "repository": "https://github.com/kaermorchen/vscode-nginx-unit",
   "author": "Stanislav Romanov <kaermorchen@gmail.com>",
   "private": false,

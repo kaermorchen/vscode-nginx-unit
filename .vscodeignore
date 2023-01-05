@@ -1,0 +1,7 @@
+**/*.*
+!assets/**/*.*
+!out/**/*.*
+!schemas/**/*.*
+!LICENSE.md
+!package.json
+!README.md
