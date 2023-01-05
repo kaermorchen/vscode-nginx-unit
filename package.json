@@ -2,7 +2,7 @@
   "name": "vscode-nginx-unit",
   "displayName": "NGINX Unit",
   "description": "Support for NGINX Unit",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "publisher": "stanislav",
   "repository": "https://github.com/kaermorchen/vscode-nginx-unit",
   "author": "Stanislav Romanov <kaermorchen@gmail.com>",
