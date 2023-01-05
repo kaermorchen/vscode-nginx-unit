@@ -5,8 +5,8 @@ import {
   languages,
   commands,
   window,
+  Uri,
 } from 'vscode';
-import { URI } from 'vscode-uri';
 import UnitFS from './providers/unit-file-system';
 
 export function activate(context: ExtensionContext) {
@@ -68,9 +68,7 @@ async function readPath(path: string) {
     }
   }
 
-  const uri = URI.parse(
-    `${UnitFS.scheme}://${connection.name}/${path}`
-  );
+  const uri = Uri.parse(`${UnitFS.scheme}://${connection.name}/${path}`);
   const doc = await workspace.openTextDocument(uri);
 
   window.showTextDocument(doc, { preview: false });
