@@ -3,14 +3,21 @@
   "displayName": "NGINX Unit",
   "description": "Support for NGINX Unit",
   "version": "0.0.0",
-  "publisher": "Stanislav Romanov <kaermorchen@gmail.com>",
+  "publisher": "kaermorchen",
   "repository": "https://github.com/kaermorchen/vscode-nginx-unit",
   "author": "Stanislav Romanov <kaermorchen@gmail.com>",
-  "private": true,
+  "private": false,
   "engines": {
     "vscode": "^1.74.0"
   },
-  "categories": [],
+  "keywords": [
+    "Nginx Unit"
+  ],
+  "icon": "assets/logo.png",
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onFileSystem:nginx-unit"
   ],
