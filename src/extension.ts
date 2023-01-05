@@ -9,8 +9,6 @@ import {
 import UnitFS from './providers/unit-file-system';
 import nameToURI from './utils/name-to-uri';
 
-const unitSections = ['config', 'certificates', 'status'];
-
 export function activate(context: ExtensionContext) {
   const unitFS = new UnitFS();
 
@@ -27,48 +25,52 @@ export function activate(context: ExtensionContext) {
   );
 
   const commandRegistrations = Disposable.from(
-    commands.registerCommand('nginx-unit.open-config', async () => {
-      const config = workspace.getConfiguration('nginx-unit');
-      const connections = config.get('connections') as ConfigConnection[];
-      let connection;
-
-      if (connections.length === 1) {
-        connection = connections[0];
-      } else {
-        const value = await window.showQuickPick(
-          connections.map((item) => item.name),
-          {
-            placeHolder: 'Select the connection',
-          }
-        );
-
-        connection = connections.find((item) => item.name === value);
-
-        if (!connection) {
-          return;
-        }
-      }
-
-      const section = await window.showQuickPick(unitSections, {
-        placeHolder: 'Select the section of Nginx Unit',
-      });
-
-      if (!section) {
-        return;
-      }
-
-      const doc = await workspace.openTextDocument(
-        nameToURI(connection.name, section)
-      );
-
-      window.showTextDocument(doc, { preview: false });
-    })
+    commands.registerCommand(
+      'nginx-unit.open.config',
+      readSection.bind(null, 'config')
+    ),
+    commands.registerCommand(
+      'nginx-unit.open.certificates',
+      readSection.bind(null, 'certificates')
+    ),
+    commands.registerCommand(
+      'nginx-unit.open.status',
+      readSection.bind(null, 'status')
+    )
   );
 
   context.subscriptions.push(
-    // unitFS,
     providerRegistrations,
     eventRegistrations,
     commandRegistrations
   );
+}
+
+async function readSection(section: string) {
+  const config = workspace.getConfiguration('nginx-unit');
+  const connections = config.get('connections') as ConfigConnection[];
+  let connection;
+
+  if (connections.length === 1) {
+    connection = connections[0];
+  } else {
+    const value = await window.showQuickPick(
+      connections.map((item) => item.name),
+      {
+        placeHolder: 'Select the connection',
+      }
+    );
+
+    connection = connections.find((item) => item.name === value);
+
+    if (!connection) {
+      return;
+    }
+  }
+
+  const doc = await workspace.openTextDocument(
+    nameToURI(connection.name, section)
+  );
+
+  window.showTextDocument(doc, { preview: false });
 }

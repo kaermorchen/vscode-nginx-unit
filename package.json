@@ -33,8 +33,19 @@
     ],
     "commands": [
       {
-        "command": "nginx-unit.open-config",
-        "title": "Open Nginx Unit"
+        "command": "nginx-unit.open.config",
+        "title": "Open Config",
+        "category": "Nginx Unit"
+      },
+      {
+        "command": "nginx-unit.open.certificates",
+        "title": "Open Certificates",
+        "category": "Nginx Unit"
+      },
+      {
+        "command": "nginx-unit.open.status",
+        "title": "Open Status",
+        "category": "Nginx Unit"
       }
     ],
     "configuration": [
@@ -46,6 +57,7 @@
             "default": [
               {
                 "name": "default",
+                "host": "localhost",
                 "params": [
                   "--unix-socket",
                   "/var/run/control.unit.sock"

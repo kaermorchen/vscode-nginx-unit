@@ -49,7 +49,7 @@ export default class UnitFS implements FileSystemProvider {
       timeout: 1000 * 60 * 1, // 1 minute
     };
     const args = [
-      `http://localhost/${section}/`,
+      `http://${connection.host}/${section}/`,
       '--silent',
       '--no-buffer',
       ...connection.params,
