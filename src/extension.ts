@@ -6,8 +6,8 @@ import {
   commands,
   window,
 } from 'vscode';
+import { URI } from 'vscode-uri';
 import UnitFS from './providers/unit-file-system';
-import nameToURI from './utils/name-to-uri';
 
 export function activate(context: ExtensionContext) {
   const unitFS = new UnitFS();
@@ -27,15 +27,15 @@ export function activate(context: ExtensionContext) {
   const commandRegistrations = Disposable.from(
     commands.registerCommand(
       'nginx-unit.open.config',
-      readSection.bind(null, 'config')
+      readPath.bind(null, 'config')
     ),
     commands.registerCommand(
       'nginx-unit.open.certificates',
-      readSection.bind(null, 'certificates')
+      readPath.bind(null, 'certificates')
     ),
     commands.registerCommand(
       'nginx-unit.open.status',
-      readSection.bind(null, 'status')
+      readPath.bind(null, 'status')
     )
   );
 
@@ -46,7 +46,7 @@ export function activate(context: ExtensionContext) {
   );
 }
 
-async function readSection(section: string) {
+async function readPath(path: string) {
   const config = workspace.getConfiguration('nginx-unit');
   const connections = config.get('connections') as ConfigConnection[];
   let connection;
@@ -68,9 +68,10 @@ async function readSection(section: string) {
     }
   }
 
-  const doc = await workspace.openTextDocument(
-    nameToURI(connection.name, section)
+  const uri = URI.parse(
+    `${UnitFS.scheme}://${connection.name}/${path}`
   );
+  const doc = await workspace.openTextDocument(uri);
 
   window.showTextDocument(doc, { preview: false });
 }

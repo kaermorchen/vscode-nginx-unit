@@ -1,5 +1,5 @@
 interface ConfigConnection {
   name: string;
-  host: string;
+  origin: string;
   params: string[];
 }

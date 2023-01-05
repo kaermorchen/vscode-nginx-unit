@@ -54,10 +54,11 @@
         "properties": {
           "nginx-unit.connections": {
             "type": "array",
+            "description": "List of the connections",
             "default": [
               {
                 "name": "default",
-                "host": "localhost",
+                "origin": "http://localhost",
                 "params": [
                   "--unix-socket",
                   "/var/run/control.unit.sock"

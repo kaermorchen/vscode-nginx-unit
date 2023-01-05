@@ -10,7 +10,6 @@ import {
   Uri,
 } from 'vscode';
 import getConnection from '../utils/get-connection';
-import getSection from '../utils/get-section';
 
 export default class UnitFS implements FileSystemProvider {
   static scheme = 'nginx-unit';
@@ -43,14 +42,14 @@ export default class UnitFS implements FileSystemProvider {
 
   async requestToUnit(uri: Uri, curlArgs: string[]): Promise<string> {
     const connection = getConnection(uri);
-    const section = getSection(uri);
     const spawnOptions = {
       encoding: 'utf8',
       timeout: 1000 * 60 * 1, // 1 minute
     };
     const args = [
-      `http://${connection.host}/${section}/`,
+      `${connection.origin}/${uri.path}`,
       '--silent',
+      '--show-error',
       '--no-buffer',
       ...connection.params,
       ...curlArgs,
