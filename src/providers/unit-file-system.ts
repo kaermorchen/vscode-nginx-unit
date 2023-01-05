@@ -8,7 +8,6 @@ import {
   FileSystemProvider,
   FileType,
   Uri,
-  window,
 } from 'vscode';
 import getConnection from '../utils/get-connection';
 import getSection from '../utils/get-section';
@@ -37,11 +36,9 @@ export default class UnitFS implements FileSystemProvider {
   async writeFile(uri: Uri, content: Uint8Array): Promise<void> {
     const str = new TextDecoder().decode(content);
 
-    try {
-      await this.requestToUnit(uri, ['-X', 'PUT', '-d', str]);
-    } catch {
-      // TODO: add diagnostic
-    }
+    return this.requestToUnit(uri, ['-X', 'PUT', '-d', str]).then(() =>
+      Promise.resolve()
+    );
   }
 
   async requestToUnit(uri: Uri, curlArgs: string[]): Promise<string> {
@@ -66,9 +63,7 @@ export default class UnitFS implements FileSystemProvider {
         const result = JSON.parse(data.toString());
 
         if (result.error) {
-          const msg = `${result.error} ${result.detail}`;
-          window.showErrorMessage(msg);
-          reject(new Error(msg));
+          reject(new Error(`${result.error} ${result.detail}`));
         } else {
           resolve(data);
         }
